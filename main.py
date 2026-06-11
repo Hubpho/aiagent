@@ -3,6 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 
 def main() -> None:
@@ -16,9 +17,16 @@ def main() -> None:
         raise RuntimeError("GEMINI_API_KEY environment variable not set")
 
     client = genai.Client(api_key=api_key)
+    messages: list[types.Content] = [
+        types.Content(role="user", parts=[types.Part(text=args.user_prompt)])
+    ]
+    generate_content(client, messages)
+
+
+def generate_content(client: genai.Client, messages: list[types.Content]) -> None:
     response = client.models.generate_content(
         model="gemini-2.5-flash",
-        contents=args.user_prompt,
+        contents=messages,
     )
     if not response.usage_metadata:
         raise RuntimeError("Gemini API response appears to be malformed")
